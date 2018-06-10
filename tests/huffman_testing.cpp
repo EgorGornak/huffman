@@ -48,17 +48,6 @@ bool encode_decode_file(const std::string &input_file) {
 
 }
 
-TEST(correctness, empty_file)
-{
-    std::stringstream input("");
-    std::stringstream encode;
-    std::stringstream decode;
-    Huffman::encode(input, encode);
-    Huffman::decode(encode, decode);
-
-    EXPECT_EQ(input.str(), decode.str());
-}
-
 TEST(correctness, eight_letters_b)
 {
     std::stringstream input("bbbbbbbb"); // b count multiplicity 8
@@ -82,6 +71,21 @@ TEST(correctness, letters_a)
     EXPECT_EQ(input.str(), decode.str());
 }
 
+TEST(correctness, spoiled_file)
+{
+    std::stringstream input("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    std::stringstream encode;
+    std::stringstream decode;
+    Huffman::encode(input, encode);
+    char c = 'a';
+    encode.write(&c, sizeof(char));
+    EXPECT_ANY_THROW(Huffman::decode(encode, decode));
+}
+
+TEST(correctness, empty_file)
+{
+    EXPECT_TRUE(encode_decode_file("../tests/empty"));
+}
 
 TEST(correctness, mp3)
 {
@@ -96,6 +100,11 @@ TEST(correctness, video)
 TEST(correctness, pdf)
 {
     EXPECT_TRUE(encode_decode_file("../tests/EffectiveCPlusPlus.pdf"));
+}
+
+TEST(correctness, jpg)
+{
+    EXPECT_TRUE(encode_decode_file("../tests/white.jpg"));
 }
 
 TEST(correctness, random_string) {

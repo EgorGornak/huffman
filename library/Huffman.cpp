@@ -42,8 +42,8 @@ void Huffman::encode(std::istream &input, std::ostream &output) {
         output.write(&c, sizeof(char));
     }
 
-    uint8_t len = (8 - get_len(root, count, 0) % 8) % 8;  // count of ignore bites
-    output.write((char *) &len, sizeof(uint8_t));
+    uint32_t len = get_len(root, count, 0);  // count of ignore bites
+    output.write((char *) &len, sizeof(uint32_t));
 
     input.seekg(std::istream::beg);
     std::vector<bool> buffer;
@@ -80,6 +80,9 @@ void Huffman::decode(std::istream &input, std::ostream &output) {
             round <<= 1;
         }
     }
+    if (round_tree.size() > size_tree + 8) {
+        throw std::exception();
+    }
     while (round_tree.size() != size_tree) {
         round_tree.pop_back();
     }
@@ -98,17 +101,23 @@ void Huffman::decode(std::istream &input, std::ostream &output) {
     int pos_round = 0;
     int pos_letters = 0;
     build_tree(root, round_tree, pos_round, letters, pos_letters);
-    uint8_t ignore_rest;
-    input.read((char *) &ignore_rest, sizeof(uint8_t));
+
+    uint32_t number_of_bites;
+    input.read((char *) &number_of_bites, sizeof(uint32_t));
+    int ignore_remainder = (8 - number_of_bites % 8) % 8;
 
     Node *curr = root;
+    uint32_t read_count = 0;
     while (input.peek() != EOF) {
         uint8_t byte;
         input.read((char *) &byte, sizeof(uint8_t));
-
+        read_count += 8;
+        if (read_count >= number_of_bites + 8) {
+            throw std::exception();
+        }
         int ignore = 0;
         if (input.peek() == EOF) {
-            ignore = ignore_rest;
+            ignore = ignore_remainder;
         }
         for (int j = 0; j < 8 - ignore; j++) {
             bool x = bool(byte & (1 << 7));

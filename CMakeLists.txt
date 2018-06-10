@@ -3,7 +3,7 @@ project(huffman)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(huffman library/Huffman.cpp library/Huffman.h console_utility/main.cpp)
+add_executable(huffman library/Huffman.cpp library/Huffman.h console_utility/main.cpp   )
 
 add_executable(huffman_testing
         tests/huffman_testing.cpp
