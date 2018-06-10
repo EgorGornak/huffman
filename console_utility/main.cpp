@@ -15,7 +15,11 @@ int main (int argc, char ** argv) {
     if (mode == "-e") {
         Huffman::encode(input, output);
     } else {
-        Huffman::decode(input, output);
+        try {
+            Huffman::decode(input, output);
+        } catch (std::exception e) {
+            std::cerr << "spolied file :(\n";
+        }
     }
 
     return 0;

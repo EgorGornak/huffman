@@ -16,6 +16,10 @@ private:
         int weight;
         Node *left, *right;
         ~Node() {
+            if (this == nullptr) {
+                return;
+            }
+
             if (left != nullptr) {
                 delete left;
             }
@@ -23,7 +27,7 @@ private:
                 delete right;
             }
         };
-        Node() {};
+        Node() : left(nullptr), right(nullptr) {};
         Node(char c, int weight) : c(c), weight(weight), left(nullptr), right(nullptr) {};
 
         bool operator<(const Node& other) const
