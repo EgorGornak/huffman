@@ -22,7 +22,7 @@ void Huffman::encode(std::istream &input, std::ostream &output) {
         count[c + 128]++;
     }
 
-    Node *root = build_tree(count);
+    std::shared_ptr<Node>root = build_tree(count);
     std::vector<bool> encoded_letter[256];
     calc_encoded_letter(root, encoded_letter, std::vector<bool>(0));
 
@@ -45,7 +45,7 @@ void Huffman::encode(std::istream &input, std::ostream &output) {
     uint32_t len = get_len(root, count, 0);  // count of ignore bites
     output.write((char *) &len, sizeof(uint32_t));
 
-    input.seekg(std::istream::beg);
+    input.seekg(0, std::ios::beg);
     std::vector<bool> buffer;
     while (input.peek() != EOF) {
         char c;
@@ -54,7 +54,6 @@ void Huffman::encode(std::istream &input, std::ostream &output) {
         push_buffer(output, buffer, false);
     }
     push_buffer(output, buffer, true);
-    delete root;
 }
 
 void Huffman::decode(std::istream &input, std::ostream &output) {
@@ -93,7 +92,7 @@ void Huffman::decode(std::istream &input, std::ostream &output) {
     for (int i = 0; i < count_letters; i++) {
         input.read(&letters[i], sizeof(char));
     }
-    Node *root = new Node();
+    std::shared_ptr<Node> root = std::make_shared<Node>();
     int pos_round = 0;
     int pos_letters = 0;
     build_tree(root, round_tree, pos_round, letters, pos_letters);
@@ -102,14 +101,13 @@ void Huffman::decode(std::istream &input, std::ostream &output) {
     input.read((char *) &number_of_bites, sizeof(uint32_t));
     int ignore_remainder = (8 - number_of_bites % 8) % 8;
 
-    Node *curr = root;
+    std::shared_ptr<Node>curr = root;
     uint32_t read_count = 0;
     while (input.peek() != EOF) {
         uint8_t byte;
         input.read((char *) &byte, sizeof(uint8_t));
         read_count += 8;
         if (read_count >= number_of_bites + 8) {
-            delete root;
             throw std::exception();
         }
         int ignore = 0;
@@ -120,13 +118,11 @@ void Huffman::decode(std::istream &input, std::ostream &output) {
             bool x = bool(byte & (1 << 7));
             if (x == 0) {
                 if (curr -> left == nullptr) {
-                    delete root;
                     throw std::exception();
                 }
                 curr = curr->left;
             } else {
                 if (curr -> right == nullptr) {
-                    delete root;
                     throw std::exception();
                 }
                 curr = curr->right;
@@ -138,10 +134,9 @@ void Huffman::decode(std::istream &input, std::ostream &output) {
             byte <<= 1;
         }
     }
-    delete root;
 }
 
-Huffman::Node *Huffman::build_tree(std::vector<int> &count) {
+std::shared_ptr<Huffman::Node> Huffman::build_tree(std::vector<int> &count) {
     std::vector<std::pair<int, char> > weight;
     for (int i = 0; i < count.size(); i++) {
         if (count[i] != 0) {
@@ -151,22 +146,22 @@ Huffman::Node *Huffman::build_tree(std::vector<int> &count) {
     std::sort(weight.begin(), weight.end());
 
     if (weight.size() == 1) {
-        Node *list = new Node(weight[0].second, weight[0].first);
-        Node *root = new Node();
+        std::shared_ptr<Node>list = std::make_shared<Node>(weight[0].second, weight[0].first);
+        std::shared_ptr<Node>root = std::make_shared<Node>();
         root->left = list;
         return root;
     }
 
-    std::multiset<Node *, Comp_node> s;
+    std::multiset<std::shared_ptr<Node>, Comp_node> s;
     for (auto x: weight) {
-        s.insert(new Node(x.second, x.first));
+        s.insert(std::make_shared<Node>(x.second, x.first));
     }
     while (s.size() > 1) {
-        Node *a = *s.begin();
+        std::shared_ptr<Node>a = *s.begin();
         s.erase(s.begin());
-        Node *b = *s.begin();
+        std::shared_ptr<Node>b = *s.begin();
         s.erase(s.begin());
-        Node *tmp = new Node();
+        std::shared_ptr<Node>tmp = std::make_shared<Node>();
         tmp->weight = a->weight + b->weight;
         tmp->left = a;
         tmp->right = b;
@@ -176,7 +171,7 @@ Huffman::Node *Huffman::build_tree(std::vector<int> &count) {
     return *s.begin();
 }
 
-void Huffman::calc_encoded_letter(Huffman::Node *vertex, std::vector<bool> encoded_letters[], std::vector<bool> curr) {
+void Huffman::calc_encoded_letter(std::shared_ptr<Node>vertex, std::vector<bool> encoded_letters[], std::vector<bool> curr) {
     if (vertex->left == nullptr && vertex->right == nullptr) {
         encoded_letters[vertex->c + 128] = curr;
         return;
@@ -202,6 +197,7 @@ void Huffman::push_buffer(std::ostream &output, std::vector<bool> &v, bool flag)
         }
         output.write((char *) &tmp, sizeof(char));
     }
+
     if (flag) {
         if (v.size() % 8 != 0) {
             unsigned char tmp = 0;
@@ -219,10 +215,9 @@ void Huffman::push_buffer(std::ostream &output, std::vector<bool> &v, bool flag)
         }
         v = tmp;
     }
-
 }
 
-void Huffman::go_round(Huffman::Node *vertex, std::vector<bool> &curr) {
+void Huffman::go_round(std::shared_ptr<Node> vertex, std::vector<bool> &curr) {
     if (vertex->left != nullptr) {
         curr.push_back(0);
         go_round(vertex->left, curr);
@@ -234,7 +229,7 @@ void Huffman::go_round(Huffman::Node *vertex, std::vector<bool> &curr) {
     curr.push_back(1);
 }
 
-void Huffman::go_round(Huffman::Node *vertex, std::vector<char> &curr) {
+void Huffman::go_round(std::shared_ptr<Node> vertex, std::vector<char> &curr) {
     if (vertex->left == nullptr && vertex->right == nullptr) {
         curr.push_back(vertex->c);
     }
@@ -246,7 +241,7 @@ void Huffman::go_round(Huffman::Node *vertex, std::vector<char> &curr) {
     }
 }
 
-size_t Huffman::get_len(Huffman::Node *vertex, std::vector<int> &count, int deep) {
+size_t Huffman::get_len(std::shared_ptr<Node> vertex, std::vector<int> &count, int deep) {
     if (vertex->left == nullptr && vertex->right == nullptr) {
         return count[vertex->c + 128] * deep;
     }
@@ -260,7 +255,7 @@ size_t Huffman::get_len(Huffman::Node *vertex, std::vector<int> &count, int deep
     return summ;
 }
 
-void Huffman::build_tree(Huffman::Node *&vertex, std::vector<bool> &round, int &pos_round, std::vector<char> &letters,
+void Huffman::build_tree(std::shared_ptr<Node> &vertex, std::vector<bool> &round, int &pos_round, std::vector<char> &letters,
                          int &pos_letters) {
     if (round[pos_round] == 1) {
         if (vertex->left == nullptr && vertex->right == nullptr) {
@@ -270,10 +265,10 @@ void Huffman::build_tree(Huffman::Node *&vertex, std::vector<bool> &round, int &
         if (vertex -> left != nullptr) {
             std::cout << "!@#\n";
         }
-        vertex->left = new Node();
+        vertex->left = std::make_shared<Node>();
         build_tree(vertex->left, round, ++pos_round, letters, pos_letters);
         if (pos_round < round.size() && round[pos_round] == 0) {
-            vertex->right = new Node();
+            vertex->right = std::make_shared<Node>();
             build_tree(vertex->right, round, ++pos_round, letters, pos_letters);
         }
     }

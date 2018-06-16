@@ -14,19 +14,7 @@ private:
     struct Node{
         char c;
         int weight;
-        Node *left, *right;
-        ~Node() {
-            if (this == nullptr) {
-                return;
-            }
-
-            if (left != nullptr) {
-                delete left;
-            }
-            if (right != nullptr) {
-                delete right;
-            }
-        };
+        std::shared_ptr<Node> left, right;
         Node() : left(nullptr), right(nullptr) {};
         Node(char c, int weight) : c(c), weight(weight), left(nullptr), right(nullptr) {};
 
@@ -36,19 +24,19 @@ private:
         }
     };
     struct Comp_node {
-        bool operator()(Node* x, Node* y) const {
+        bool operator()(std::shared_ptr<Node> x, std::shared_ptr<Node> y) const {
             return x->weight < y->weight;
         }
     };
 
 
-    static size_t get_len(Node* vertex, std::vector <int> &count, int deep);
-    static void go_round(Node* vertex, std::vector <bool> &curr);
-    static void go_round(Node* vertex, std::vector <char> &curr);
+    static size_t get_len(std::shared_ptr<Node> vertex, std::vector <int> &count, int deep);
+    static void go_round(std::shared_ptr<Node> vertex, std::vector <bool> &curr);
+    static void go_round(std::shared_ptr<Node> vertex, std::vector <char> &curr);
     static void push_buffer(std::ostream &output, std::vector <bool> &v, bool flag);
-    static Node* build_tree(std::vector<int> &count);
-    static void build_tree(Node* &vertex, std::vector<bool> &round, int &pos_round, std::vector<char> &letters, int &pos_letters);
-    static void calc_encoded_letter(Node* vertex, std::vector<bool> encoded_letters[], std::vector<bool> curr);
+    static std::shared_ptr<Node> build_tree(std::vector<int> &count);
+    static void build_tree(std::shared_ptr<Node> &vertex, std::vector<bool> &round, int &pos_round, std::vector<char> &letters, int &pos_letters);
+    static void calc_encoded_letter(std::shared_ptr<Node> vertex, std::vector<bool> encoded_letters[], std::vector<bool> curr);
 };
 
 
