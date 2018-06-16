@@ -61,14 +61,10 @@ void Huffman::decode(std::istream &input, std::ostream &output) {
     if (input.peek() == EOF) {
         return;
     }
-    if (!check_hash(input)) {
-        throw;
-    }
 
     uint16_t size_tree;   //  read tree
     input.read((char *) &size_tree, sizeof(uint16_t));
     if (size_tree <= 0 || size_tree > 1024) {
-        std::cerr << "size_tree = " << size_tree << '\n';
         throw std::exception();
     }
     std::vector<bool> round_tree;
@@ -113,6 +109,7 @@ void Huffman::decode(std::istream &input, std::ostream &output) {
         input.read((char *) &byte, sizeof(uint8_t));
         read_count += 8;
         if (read_count >= number_of_bites + 8) {
+            delete root;
             throw std::exception();
         }
         int ignore = 0;
@@ -123,11 +120,13 @@ void Huffman::decode(std::istream &input, std::ostream &output) {
             bool x = bool(byte & (1 << 7));
             if (x == 0) {
                 if (curr -> left == nullptr) {
+                    delete root;
                     throw std::exception();
                 }
                 curr = curr->left;
             } else {
                 if (curr -> right == nullptr) {
+                    delete root;
                     throw std::exception();
                 }
                 curr = curr->right;
@@ -175,10 +174,6 @@ Huffman::Node *Huffman::build_tree(std::vector<int> &count) {
     }
 
     return *s.begin();
-}
-
-bool Huffman::check_hash(std::istream &input) {
-    return true;
 }
 
 void Huffman::calc_encoded_letter(Huffman::Node *vertex, std::vector<bool> encoded_letters[], std::vector<bool> curr) {
