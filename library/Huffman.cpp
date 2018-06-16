@@ -75,7 +75,7 @@ void Huffman::decode(std::istream &input, std::ostream &output) {
             round <<= 1;
         }
     }
-    if (round_tree.size() > size_tree + 8) {
+    if ( round_tree.size() > size_tree + static_cast<uint32_t >(8)) {
         throw std::exception();
     }
     while (round_tree.size() != size_tree) {
@@ -138,7 +138,7 @@ void Huffman::decode(std::istream &input, std::ostream &output) {
 
 std::shared_ptr<Huffman::Node> Huffman::build_tree(std::vector<int> &count) {
     std::vector<std::pair<int, char> > weight;
-    for (int i = 0; i < count.size(); i++) {
+    for (size_t i = 0; i < count.size(); i++) {
         if (count[i] != 0) {
             weight.push_back(std::make_pair(count[i], i - 128));
         }
@@ -189,7 +189,7 @@ void Huffman::calc_encoded_letter(std::shared_ptr<Node>vertex, std::vector<bool>
 }
 
 void Huffman::push_buffer(std::ostream &output, std::vector<bool> &v, bool flag) {
-    for (int i = 0; i < (v.size() / 8) * 8; i += 8) {
+    for (int i = 0; i < static_cast<int>((v.size() / 8) * 8); i += 8) {
         unsigned char tmp = 0;
         for (int j = i; j < i + 8; j++) {
             tmp <<= 1;
@@ -201,7 +201,7 @@ void Huffman::push_buffer(std::ostream &output, std::vector<bool> &v, bool flag)
     if (flag) {
         if (v.size() % 8 != 0) {
             unsigned char tmp = 0;
-            for (int i = (v.size() / 8) * 8; i < v.size(); i++) {
+            for (int i = static_cast<int>((v.size() / 8) * 8); i < static_cast<int>(v.size()); i++) {
                 tmp <<= 1;
                 tmp += v[i];
             }
@@ -210,7 +210,7 @@ void Huffman::push_buffer(std::ostream &output, std::vector<bool> &v, bool flag)
         }
     } else {
         std::vector<bool> tmp;
-        for (int i = (v.size() / 8) * 8; i < v.size(); i++) {
+        for (int i = static_cast<int>((v.size() / 8) * 8); i < static_cast<int>(v.size()); i++) {
             tmp.push_back(v[i]);
         }
         v = tmp;
@@ -267,7 +267,7 @@ void Huffman::build_tree(std::shared_ptr<Node> &vertex, std::vector<bool> &round
         }
         vertex->left = std::make_shared<Node>();
         build_tree(vertex->left, round, ++pos_round, letters, pos_letters);
-        if (pos_round < round.size() && round[pos_round] == 0) {
+        if (static_cast<size_t>(pos_round) < round.size() && round[pos_round] == 0) {
             vertex->right = std::make_shared<Node>();
             build_tree(vertex->right, round, ++pos_round, letters, pos_letters);
         }

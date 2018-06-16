@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <vector>
 #include "../library/Huffman.h"
 
 int main (int argc, char ** argv) {
@@ -21,6 +22,5 @@ int main (int argc, char ** argv) {
             std::cerr << "spolied file :(\n";
         }
     }
-
     return 0;
 }
