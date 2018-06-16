@@ -24,13 +24,13 @@ private:
         }
     };
     struct Comp_node {
-        bool operator()(std::shared_ptr<Node> x, std::shared_ptr<Node> y) const {
+        bool operator()(const std::shared_ptr<Node> &x, const std::shared_ptr<Node> &y) const {
             return x->weight < y->weight;
         }
     };
 
 
-    static size_t get_len(std::shared_ptr<Node> vertex, std::vector <int> &count, int deep);
+    static uint32_t get_len(const std::shared_ptr<Node> &vertex, std::vector <int> &count, uint32_t deep);
     static void go_round(std::shared_ptr<Node> vertex, std::vector <bool> &curr);
     static void go_round(std::shared_ptr<Node> vertex, std::vector <char> &curr);
     static void push_buffer(std::ostream &output, std::vector <bool> &v, bool flag);

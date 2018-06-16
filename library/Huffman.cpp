@@ -30,19 +30,19 @@ void Huffman::encode(std::istream &input, std::ostream &output) {
     go_round(root, round_tree);
     round_tree.pop_back();
 
-    uint16_t size_tree = round_tree.size();
+    auto size_tree = static_cast<uint16_t>(round_tree.size());
     output.write((char *) &size_tree, sizeof(uint16_t)); // tree_size
     push_buffer(output, round_tree, true);                  // tree
 
     std::vector<char> round_letters;
     go_round(root, round_letters);
-    uint16_t size_letters = round_letters.size();        // letters_size
+    auto size_letters = static_cast<uint16_t>(round_letters.size());        // letters_size
     output.write((char *) &size_letters, sizeof(uint16_t)); // letters
     for (char c: round_letters) {
         output.write(&c, sizeof(char));
     }
 
-    uint32_t len = get_len(root, count, 0);  // count of ignore bites
+    uint32_t len =get_len(root, count, 0);  // count of ignore bites
     output.write((char *) &len, sizeof(uint32_t));
 
     input.seekg(0, std::ios::beg);
@@ -177,12 +177,12 @@ void Huffman::calc_encoded_letter(std::shared_ptr<Node>vertex, std::vector<bool>
         return;
     }
     if (vertex->left != nullptr) {
-        curr.push_back(0);
+        curr.push_back(false);
         calc_encoded_letter(vertex->left, encoded_letters, curr);
         curr.pop_back();
     }
     if (vertex->right != nullptr) {
-        curr.push_back(1);
+        curr.push_back(true);
         calc_encoded_letter(vertex->right, encoded_letters, curr);
         curr.pop_back();
     }
@@ -201,7 +201,7 @@ void Huffman::push_buffer(std::ostream &output, std::vector<bool> &v, bool flag)
     if (flag) {
         if (v.size() % 8 != 0) {
             unsigned char tmp = 0;
-            for (int i = static_cast<int>((v.size() / 8) * 8); i < static_cast<int>(v.size()); i++) {
+            for (auto i = static_cast<int>((v.size() / 8) * 8); i < static_cast<int>(v.size()); i++) {
                 tmp <<= 1;
                 tmp += v[i];
             }
@@ -210,7 +210,7 @@ void Huffman::push_buffer(std::ostream &output, std::vector<bool> &v, bool flag)
         }
     } else {
         std::vector<bool> tmp;
-        for (int i = static_cast<int>((v.size() / 8) * 8); i < static_cast<int>(v.size()); i++) {
+        for (auto i = static_cast<int>((v.size() / 8) * 8); i < static_cast<int>(v.size()); i++) {
             tmp.push_back(v[i]);
         }
         v = tmp;
@@ -219,14 +219,14 @@ void Huffman::push_buffer(std::ostream &output, std::vector<bool> &v, bool flag)
 
 void Huffman::go_round(std::shared_ptr<Node> vertex, std::vector<bool> &curr) {
     if (vertex->left != nullptr) {
-        curr.push_back(0);
+        curr.push_back(false);
         go_round(vertex->left, curr);
     }
     if (vertex->right != nullptr) {
-        curr.push_back(0);
+        curr.push_back(false);
         go_round(vertex->right, curr);
     }
-    curr.push_back(1);
+    curr.push_back(true);
 }
 
 void Huffman::go_round(std::shared_ptr<Node> vertex, std::vector<char> &curr) {
@@ -241,11 +241,11 @@ void Huffman::go_round(std::shared_ptr<Node> vertex, std::vector<char> &curr) {
     }
 }
 
-size_t Huffman::get_len(std::shared_ptr<Node> vertex, std::vector<int> &count, int deep) {
+uint32_t Huffman::get_len(const std::shared_ptr<Node> &vertex, std::vector<int> &count, uint32_t deep) {
     if (vertex->left == nullptr && vertex->right == nullptr) {
         return count[vertex->c + 128] * deep;
     }
-    size_t summ = 0;
+    uint32_t summ = 0;
     if (vertex->left != nullptr) {
         summ += get_len(vertex->left, count, deep + 1);
     }
@@ -262,9 +262,6 @@ void Huffman::build_tree(std::shared_ptr<Node> &vertex, std::vector<bool> &round
             vertex->c = letters[pos_letters++];
         }
     } else {
-        if (vertex -> left != nullptr) {
-            std::cout << "!@#\n";
-        }
         vertex->left = std::make_shared<Node>();
         build_tree(vertex->left, round, ++pos_round, letters, pos_letters);
         if (static_cast<size_t>(pos_round) < round.size() && round[pos_round] == 0) {

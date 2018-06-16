@@ -86,7 +86,7 @@ TEST(correctness, empty_file)
 {
     EXPECT_TRUE(encode_decode_file("../tests/empty"));
 }
-
+/*
 TEST(correctness, mp3)
 {
    EXPECT_TRUE(encode_decode_file("../tests/music.mp3"));
@@ -100,7 +100,7 @@ TEST(correctness, video)
 TEST(correctness, pdf)
 {
     EXPECT_TRUE(encode_decode_file("../tests/EffectiveCPlusPlus.pdf"));
-}
+}*/
 
 TEST(correctness, jpg)
 {
